@@ -1,0 +1,437 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#libraries
+library(dplyr)
+library(pROC)
+library(ggplot2)
+library(plotly)
+
+
+#open the file
+cbb=read.csv("cbb.csv",header=TRUE,sep=",")
+
+
+#group by conference and year to calculate conference average
+conference <- cbb %>%
+  group_by(YEAR, CONF) %>%
+  mutate(avgwin = mean(W, na.rm=TRUE), avgefg= mean(EFG_O, na.rm=TRUE), avg2p= mean(X2P_O, na.rm=TRUE), avg3p= mean(X3P_O, na.rm=TRUE), avgftr = mean(FTR, na.rm=TRUE), avgorb = mean(ORB, na.rm=TRUE), avgefgd = mean(EFG_D, na.rm=TRUE),avgtor = mean(TOR, na.rm=TRUE), avgtord = mean(TORD, na.rm=TRUE), avgdrb = mean(DRB, na.rm=TRUE), avgftrd = mean(FTRD, na.rm=TRUE), avg2pd = mean(X2P_D, na.rm=TRUE), avg3pd = mean(X3P_D, na.rm=TRUE), avgadj = mean(ADJ_T, na.rm=TRUE)) %>%
+  ungroup() 
+
+#calculate ratio of team performance to conference performance
+conference <- conference %>% mutate(winrate = (W/avgwin), efgrate= (EFG_O/avgefg), rate2p= (X2P_O/avg2p), rate3p= (X3P_O/avg3p), ftrrate = (FTR/avgftr), orbrate = (ORB/avgorb), efgdrate = (EFG_D/avgefgd), torrate = (TOR/avgtor), tordrate = (TORD/avgtord), drbrate = (DRB/avgdrb), ftrdrate = (FTRD/avgftrd), d2prate = (X2P_D/avg2pd), d3prate = (X3P_D/avg3pd), adjrate = (ADJ_T/avgadj))
+
+#filter outliers + create binary variable for final 4
+conferenceclean <- conference %>% filter(!CONF %in% c('Ind', 'ind', 'GWC', 'Sum'))
+conferenceclean$finals=ifelse(conferenceclean$POSTSEASON %in% c("Champions","2nd","F4"),1,0)
+
+#Grouping for Top 10 Charts
+TopWins <- conference %>%
+  group_by(CONF) %>%
+  summarize(TotalWins = sum(W))
+TopWins <- TopWins %>% 
+  arrange(desc(TotalWins)) %>%
+  slice(1:10)
+
+TeamWins <- conference %>%
+  group_by(TEAM) %>%
+  summarize(TotalWins = sum(W), Conference = first(CONF))
+TeamWins <- TeamWins %>% 
+  arrange(desc(TotalWins)) %>%
+  slice(1:10)
+
+```
+
+## Data Interpretation
+
+Put visuals that explore the data here
+
+best team
+
+best overall performance
+
+```{r}
+##M
+
+##### Librarys Used
+#library(readxl)
+#library(ggplot2)
+#library(ggcorrplot)
+#library(dplyr)
+#library(leaps)
+#library(forecast)
+#library(pROC)
+#library(tidyverse)
+#library(factoextra)
+
+## Visuals/test/validations
+
+## VISUALIZATIONS
+data = cbb
+
+data$WINSEAS <- ifelse(data$W/data$G > .5,1,0)
+
+data$MADETOURN <- ifelse(data$POSTSEASON == 'NA',0,1)
+
+average <- mean(data$W)
+
+data$aboveavg <- ifelse(data$W > average,1,0)
+
+### 
+######## TOP THREEE MOST WINNING CONFERENCES EACH YEAR
+
+mostwinningconf <- data%>%group_by(YEAR,CONF)%>%
+  summarize(total = sum(W))%>%
+  arrange(YEAR,-total)%>%
+  slice(1:3)
+
+mostwinningconf
+
+ggplot(data=mostwinningconf, aes(x= YEAR, y=total, fill=CONF)) +
+  geom_bar(stat="identity", position=position_dodge())
+
+####### TOP 3 MOST WINNING TEAMS EACH YEAR
+mostwinningteam <- data%>%group_by(YEAR,TEAM)%>%
+  summarize(total = sum(W))%>%
+  arrange(YEAR,-total)%>%
+  slice(1:3)
+
+mostwinningteam
+
+ggplot(data=mostwinningteam, aes(x= YEAR, y=total, fill=TEAM)) +
+  geom_bar(stat="identity", position=position_dodge())
+
+######## MOST EFFICIENT TEAMS BASED ON TOURNAMENT APPRERANCES
+
+mostefficient <- data%>%group_by(TEAM)%>%
+  summarize(total = sum(MADETOURN))%>%
+  arrange(-total)%>%
+  slice(1:7)
+
+mostefficient
+
+usemosteff <- c(mostefficient$TEAM)
+
+####### MOST EFFECIENT TEAMS PERFORMANCE 
+
+trendsinbest <- data%>%
+  filter(TEAM %in% usemosteff)%>%
+  group_by(YEAR)%>%
+  summarize(avgadjoe = mean(ADJOE),avgadjde = mean(ADJDE))
+
+
+trendsinbest
+
+ggplot(data= trendsinbest) + geom_smooth(aes(x=YEAR, y=ADJOE))
+
+ggplot(data = trendsinbest, aes(x=YEAR,y=ADJOE,color=TEAM, group=TEAM)) +
+  geom_line()
+
+ggplot(data = trendsinbest, aes(x=YEAR,y=ADJDE,color=TEAM, group=TEAM)) +
+  geom_line()
+
+ggplot(trendsinbest, aes(x=YEAR)) + 
+  geom_line(aes(y = avgadjoe),color = 'red') + 
+  geom_line(aes(y = avgadjde),color = 'blue') 
+
+### PCA TEST
+
+pcatest = data[,!(colnames(data)%in% c("WINSEAS","MADETOURN","aboveavg"))]
+
+names(pcatest)
+
+res.pca <- prcomp(pcatest, scale = TRUE)
+
+summary(res.pca)
+
+fviz_eig(res.pca)
+
+fviz_pca_var(res.pca,col.var = "contrib", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),repel=TRUE)
+
+### PREDICTOR AND DIMENSION REDUCTION
+
+data = data[,!(colnames(data)%in% c("TEAM","CONF","POSTSEASON","SEED"))]
+
+colnames(data)[colnames(data) %in% c("2P_O", "3P_O","2P_D","3P_D")] <- c("TWOPT_O", "THREEPT_O","TWOPT_D","THREEPT_D")
+
+set.seed(1)
+
+train=sample(c(TRUE,FALSE),prob=c(0.6,0.4),nrow(data),replace=TRUE)
+
+test=!train
+
+train.df=data[train,] 
+
+test.df=data[-train,]
+
+
+model1=regsubsets(W~.,data[train,],nvmax=20,method="exhaustive")
+test.mat=model.matrix(W~.,data[test,])
+
+val.errors=numeric(20)
+for(i in 1:20){
+  coefi=coef(model1,id=i)
+  pred=test.mat[,names(coefi)]%*%coefi
+  val.errors[i]=mean((data$W[test]-pred)^2)
+}
+val.errors
+best=which.min(val.errors)
+best
+coef(model1,best)
+
+trainmodel1 <-lm(formula = W ~ ADJOE + ADJDE + BARTHAG + EFG_O + EFG_D + TOR + TORD + ORB + DRB + FTR + FTRD + TWOPT_O + THREEPT_O + THREEPT_D + ADJ_T + WAB + YEAR + WINSEAS + aboveavg, data = train.df)
+
+trainvstest<- predict(trainmodel1,test.df)
+accuracy(trainvstest,test.df$W)
+
+####### LOGISTIC REGRESSION TO PREDICT WINSEASON BASED ON OFFENSIVE DATA
+
+model2 <- glm(formula = WINSEAS ~ YEAR + EFG_O + TOR + ORB + FTR + TWOPT_O + THREEPT_O, data = data, family = binomial)
+
+summary(model2)
+
+ggplot(data= model2) + geom_smooth(aes(x=YEAR, y=WINSEAS), method="glm",method.args = list(family = "binomial"))
+
+ggplot(data=model2, aes(x=YEAR, y=WINSEAS)) +
+  geom_smooth(method="glm", method.args = list(family = "binomial")) +
+  stat_summary(data=model2, aes(x=round(YEAR,0), y=WINSEAS), fun=mean,
+               geom="point") +
+  scale_x_continuous(breaks=seq(2013, 2019, by=1), minor_breaks=NULL) +
+  scale_y_continuous(labels = scales::percent) +
+  theme_bw()
+
+####### INTERPRETATIONS OF LOGISTIC REGRESSION
+
+# At first glance we see two things that stand out. TOR has is negatively correlated with WINSEAS which is a good sign because we would expect the higher the turnover rate, the worse a team would do. Oddly we see that THREEPT_O is also negatively correlated, which seems odd that the more three points would have a negative effect on the odds of a winning season. 
+
+LOG.ODDS <- predict(model2)
+ODDS <- exp(LOG.ODDS)
+PredictedProbability <- ODDS / (1 + ODDS)
+
+PredictedProbability
+
+MyROC <- roc(data$WINSEAS, PredictedProbability)
+
+plot(MyROC)
+
+coords(MyROC,"best")
+
+MyROC
+
+####### LINEAR REGRESSION TO FIND RELATIONS OF OFFENSIVE DATA
+
+model3 <- lm(formula = W ~ YEAR + EFG_O + TOR + ORB + FTR + TWOPT_O + THREEPT_O, data = data)
+
+summary(model3)
+
+predict(model3, data, interval="prediction", level = .95)
+
+####### LINEAR REGRESSION TO FIND RELATION OF DEFENSIVE DATA
+
+model4 <- lm(formula = W ~ YEAR + EFG_D + TORD + DRB + FTRD + TWOPT_D + THREEPT_D, data = data)
+
+summary(model4)
+
+predict(model4, data, interval="prediction", level = .95)
+
+####### COMPARING OFFENSIVE VS DEFENSIVE MODELS
+
+summary(model3)
+
+summary(model4)
+
+####### INTERPRETATIONS OF COMPARISON
+
+# When comparing both offensive and defensive linear models, given the higher r-squared of the offensive model, we can conclude that this model fits the data better. 
+
+
+```
+
+### Top 10 Teams by Total Wins
+```{r TopTenTeams}
+TopTeams <- ggplot(TeamWins, aes(x = reorder(TEAM, -TotalWins), y = TotalWins)) +
+  geom_bar(aes(fill =(Conference)), stat = 'identity') +
+  scale_fill_brewer(palette = 'Set2', name = 'Conference') +
+  xlab('Teams') +
+  ylab('Wins 2013-2019') +
+  ggtitle('Top 10 Teams') +
+  theme(axis.text.x  = element_text(angle = 65, vjust = .55))
+
+plot(TopTeams)
+
+```
+
+### Top 10 Conferences by Total Wins
+```{r Top10Conferences}
+TopConference <- ggplot(TopWins, aes(x = reorder(CONF, -TotalWins), y = TotalWins)) +
+  geom_bar(aes(fill =(CONF)), stat = 'identity') +
+  xlab('Conference') +
+  ylab('Wins 2013-2019') +
+  ggtitle('Top 10 Conferences') +
+  theme(axis.text.x  = element_text(angle = 65, vjust = .55))
+
+plot(TopConference)
+
+```
+
+
+### Boxplot of free throwrates by conference
+```{r ftrboxplot}
+boxplot(ftrrate~CONF,data=conferenceclean, main="Free Throw Rate (How often the given team shoots Free Throws)", xlab="Conference", ylab="ftr rate")
+```
+
+
+
+
+## Modeling
+
+Linear and logistic models
+
+
+### Linear Model that predicts win based on a teams performance relative to their conference
+```{r conferencewin}
+confmodwinrate <- lm(W~efgrate+ftrrate+orbrate+efgdrate+torrate+tordrate+drbrate+ftrdrate,conferenceclean)
+summary(confmodwinrate)
+
+
+
+```
+
+
+### Binomial model predicting whether team makes it to the final based on their conference avg and team's relative position
+```{r conferencefinal}
+
+isfinal <- glm(finals~ftrdrate+orbrate+avgefg+avgefgd+avgtord+as.factor(YEAR), data=conferenceclean, family="binomial")
+summary(isfinal)
+
+```
+
+
+## Predictions
+
+Put predictions using the logistic models here
+
+### Prediction of team final by conference model
+```{r predictions}
+LOfinal <- predict(isfinal) 
+ODDSfinal <- exp(LOfinal)
+PredProbFinal <- ODDSfinal / (1 + ODDSfinal)
+FinalsLogPred <- ifelse(PredProbFinal > 0.007562012, "Finalist", "Not Finalist")
+table(FinalsLogPred, conferenceclean$finals)
+
+```
+
+
+## Conclusions
+
+Linear: 1 unit increase
+basic run down (significant, direction, etc)
+
+Logistic:
+Accuracy (ROC curve)
+
+
+### Binomial model predicting whether team will make it finals based on conference performance
+
+```{r conference final accuracy}
+#accuracy of team final by conference model
+FinalROC <- roc(conferenceclean$finals, PredProbFinal)
+plot(FinalROC)
+```
+
+This model has a very high AUC
+
+This model has a high sensitivity (~0.95)--accuracy at correctly predicting finalists. The model has a fairly high specificity (~0.8)--accuracy at estimating teams that don't make it to the final four. The model has a fairly high accuracy overall (~0.8)   
+
+### Conference win linear model interpretation
+
+Coefficients (all are ratio of team’s performance to their conference performance)
+
+•	Positive coefficients – all offensive rates, when the team does well against the opposing team 
+
++	efgrate (Effective Field Goal Percentage Shot) 
+
++	ftrrate (How often the given team shoots Free Throws)
+
++	orbrate (Offensive Rebound Rate)
+
++	tordrate (Steal Rate)
+
+•	Negative coefficients – all defensive rates, when the opposing team performs well against the examined
+
++	efgdrate (Effective Field Goal Percentage Allowed) 
+
++	ftrdrate (Free Throw Rate Allowed)
+
++	drbrate (Offensive Rebound Rate Allowed)
+
++	torrate (Turnover Rate)
+
+•	One interpretation: For teams with the same ratio of team performance to conference performance for effective field goal shot & allowed, offensive rebound rate and rate allowed, free throw rate and rate allowed and turnover rate, an increase in the steal rate of 0.1 (performing an additional 10% better than your conference) is associated with ~1.5 additional wins
+
+•	R^2^ is 0.69
+
+
+## Predicting success in the NCAA Tournament based on Adjusted Offensive Efficiency 
+
+```{r}
+# Group Data by Year and Rank Teams Based on ADJOE
+data <- CBB_ALL
+new_data <- data %>%
+  arrange(YEAR, ADJOE) %>%
+  group_by(YEAR) %>%
+  mutate(RNK = rank(-ADJOE, ties.method = 'first'))
+View(new_data)
+
+# Create Dummy Variable to Determine if Team Reached Final Four
+new_data <- new_data %>%
+  mutate(FINISH = ifelse(POSTSEASON %in% c('Champions', '2ND', 'F4'), 1, 0))
+View(new_data)
+
+# Create DataFrame that Only Includes Teams that Reached Final Four
+f4 <- new_data %>%
+  filter(FINISH == 1)
+View(f4)
+
+# View the Average ADJOE Rank of Teams That Reached Final Four by Year
+av_rank <- f4 %>%
+  group_by(YEAR) %>%
+  summarise_at(vars(RNK), list(name = mean))
+av_rank
+
+attach(f4)
+plot(RNK, ADJOE, pch = 19)
+abline(lm(ADJOE ~ RNK), col = 'red')
+lines(lowess(RNK, ADJOE), col = 'blue')
+
+# Plot Comparing ADJOE and Rank of ADJOE of Teams in Final Four
+ggplot(f4) +
+ geom_point(aes(RNK, ADJOE, colour = as.character(YEAR))) +
+  geom_vline(xintercept = 20, linetype = 'dashed', color = 'red') +
+  ggtitle("Final Four Teams", subtitle = '(2013 - 2019)') +
+  xlab('ADJOE Rank') + 
+  ylab('Adj. Offensive Efficiency') +
+  labs(color = "YEAR")
+```
+
+### Predicting if Teams will Reach the Final Four Based On ADJOE
+
+```{r}
+model <- glm(FINISH ~ ADJOE, family = binomial, data = new_data)
+summary(model)
+
+prob_of_y <- exp(0.30380)
+prob_of_y
+```
+
+### Interpretation from Model
+
+• Predicted Probability of Reaching the Final Four: As ADJOE increases by 1, the Predicted Probability of Reaching the Final Four increases by 1.35 times. 
+
+• Example: Team A has an ADJOE of 120 and Team B has an ADJOE of 125. 
+  - Predicted Probability of Team A reaching the Final Four = 14.35%
+  - Predicted Probability of Team B reaching the Final Four = 43.36%
+  
+### Conclusion
+
+• When filling out your bracket next year, if the teams that you choose to reach the Final Four do not rank in the top 20 for ADJOE, CREATE A NEW BRACKET!!!

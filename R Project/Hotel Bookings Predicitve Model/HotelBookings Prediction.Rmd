@@ -1,0 +1,62 @@
+---
+title: "Hotel Bookings Prediction"
+author: "Jorge Liakopulos"
+date: "5/19/2022"
+output: pdf_document
+---
+
+```{r load data}
+getwd()
+setwd("/Users/yayoliak14/Desktop/Projects/R Project/Hotel Bookings Predicitve Model")
+df <- read.csv("hotel_bookings.csv")
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(caret)
+library(e1071)
+library(party)
+library(randomForest)
+
+```
+```{r}
+theme_ds <- theme(
+           panel.background = element_rect(fill="#6CADDF"),
+           panel.border = element_rect(fill=NA),
+           panel.grid.minor.x = element_blank(),
+           panel.grid.major.x = element_blank(),
+           panel.grid.major.y = element_blank(),
+           panel.grid.minor.y = element_blank(),
+           plot.background = element_rect(fill="#00285E"),
+           text = element_text(color="white"),
+           axis.text = element_text(color="white")
+           )
+```
+
+```{r look at data}
+dim(df)
+View(df)
+summary(df)
+```
+
+```{r Uniques}
+unique(df$hotel)
+unique(df$country)
+unique(df$market_segment)
+```
+
+```{r}
+colSums(is.na(df))
+```
+
+```{r}
+p1 <- ggplot(df, aes(hotel)) + geom_bar() + theme_ds
+p2 <- ggplot(df, aes(meal)) + geom_bar() + theme_ds
+p3 <- ggplot(df, aes(deposit_type)) + geom_bar() + theme_ds
+p4 <- ggplot(df, aes(customer_type)) + geom_bar() + theme_ds
+p1
+p2
+p3
+p4
+```

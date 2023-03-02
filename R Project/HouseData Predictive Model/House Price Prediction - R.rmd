@@ -1,0 +1,65 @@
+---
+title: "House Price Prediction"
+author: "Jorge Liakopulos"
+date: "5/19/2022"
+output: pdf_document
+---
+
+```{r load data}
+getwd()
+library("readxl")
+setwd("/Users/yayoliak14/Desktop/Projects/R Project/HouseData Predictive Model/")
+df <- read_excel("HOUSEDATA.xlsx")
+View(df)
+dim(df)
+```
+```{r load packages}
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+```
+
+```{r exploration}
+summary(df)
+unique(df$LOCATION)
+unique(df$AGENCY)
+unique(df$LOT)
+```
+
+```{r exploration}
+corr <- df %>%
+  select(PRICE, SIZE, AGE, TRAIN.DIST, SPEC.FEATS)
+View(corr)
+plot(corr)
+corrplot(cor(corr),
+         method = "number")
+hist(df$PRICE)
+ggplot(model1, aes(x=PRICE, y=SIZE)) +
+  geom_point()
+ggplot(df, aes(x=SIZE, y=TAX)) +
+  geom_point()
+boxplot(PRICE~AGENCY,
+data=df,
+main="Agency Price Ranges",
+xlab="AGENCY",
+ylab="PRICE",
+col="blue",
+border="black"
+)
+```
+
+```{r linear model}
+model1 <- lm(PRICE ~SIZE + AGE + TRAIN.DIST + SPEC.FEATS, data=df)
+summary(model1)
+coef(model1)
+par(mfrow=c(2,2))
+plot(model1)
+par(mfrow=c(1,1))
+```
+
+```{r step backwards reg}
+reduced.model <- step(model1, direction="backward")
+summary(reduced.model)
+coef(reduced.model)
+anova(reduced.model)
+```
