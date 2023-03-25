@@ -8,7 +8,7 @@
 * [Video Game Sales Prediction](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Video%20Game%20Sales%20Prediction/videogamesalesprediction.ipynb)
 * [Soccer Stats](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Soccer%20Stats/Soccer%20Teams.ipynb)
 * [Macro Counter](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Macro%20Counter/Macro%20count.ipynb)
-* [GDP Web Scraping](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/gdpscraper.ipynb)
+* [Web Scraping - GDP](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/gdpscraper.ipynb)
 
 ## [R Projects](https://github.com/JorgeLiako1998/Projects/tree/main/R%20Project)
 * [College Basketball Predictive Model](https://github.com/JorgeLiako1998/Projects/blob/main/R%20Project/Predicitve%20Model%20College%20Basketball/CollegeBasketball.Rmd)
