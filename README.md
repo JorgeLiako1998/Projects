@@ -4,6 +4,7 @@
 * [Student Performance Prediction](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Student%20Performance%20Predictive%20Model/StudentPerformancePrediction.ipynb)
 * [Analyze International Debt - SQL/Python](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Analyze%20International%20Debt%20Statistics%20-%20SQL/internationaldebt.ipynb)
 * [Asparagus production per country predictor](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Asparagus%20Production%20Predictor/Asparagus%20project.ipynb)
+* [Store Sales Analysis](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/store%20sales/inventory.ipynb)
 * [Solar Capacity Prediction](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Solar%20Capacity%20Linear%20Predictor/solarcapacitylinearpred.ipynb)
 * [Stock Price Prediction](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Stock%20Price%20Prediction/stockprediction.ipynb)
 * [Video Game Sales Prediction](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Video%20Game%20Sales%20Prediction/videogamesalesprediction.ipynb)
