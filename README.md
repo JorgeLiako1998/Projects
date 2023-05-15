@@ -12,7 +12,8 @@
 * [Macro Counter](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Macro%20Counter/Macro%20count.ipynb)
 * [Web Scraping - GDP](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/gdpscraper.ipynb)
 * [Wage Predictor](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/Predicting%20Wage/predictwage.ipynb)
-
+* [California House Prices](https://github.com/JorgeLiako1998/Projects/blob/main/Python%20Projects/done/California%20House%20Prices/california_house_prices.ipynb)
+ 
 ## [R Projects](https://github.com/JorgeLiako1998/Projects/tree/main/R%20Project)
 * [College Basketball Predictive Model](https://github.com/JorgeLiako1998/Projects/blob/main/R%20Project/Predicitve%20Model%20College%20Basketball/CollegeBasketball.Rmd)
 * [Hotel Bookings Predictive Model](https://github.com/JorgeLiako1998/Projects/blob/main/R%20Project/Hotel%20Bookings%20Predicitve%20Model/HotelBookings%20Prediction.Rmd)
